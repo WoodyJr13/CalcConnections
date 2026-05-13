@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Calc Connections</title>
+  <style>
+    :root {
+      --bg: #f7f4ec;
+      --card: #fffdf8;
+      --ink: #262626;
+      --muted: #65605a;
+      --tile: #eeebe3;
+      --tile-hover: #e4dfd3;
+      --selected: #5b564e;
+      --selected-ink: #ffffff;
+      --border: #d8d1c3;
+      --yellow: #f7d774;
+      --green: #a8d672;
+      --blue: #93c4e8;
+      --purple: #b9a0df;
+      --shadow: 0 18px 45px rgba(44, 38, 28, 0.12);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at top left, rgba(247, 215, 116, 0.28), transparent 32rem),
+        radial-gradient(circle at bottom right, rgba(147, 196, 232, 0.30), transparent 28rem),
+        var(--bg);
+      display: flex;
+      justify-content: center;
+      padding: 28px 14px;
+    }
+
+    main {
+      width: min(920px, 100%);
+      background: rgba(255, 253, 248, 0.84);
+      border: 1px solid rgba(216, 209, 195, 0.82);
+      border-radius: 28px;
+      box-shadow: var(--shadow);
+      padding: clamp(18px, 4vw, 38px);
+      backdrop-filter: blur(10px);
+    }
+
+    .hero {
+      text-align: center;
+      margin-bottom: 24px;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(2.4rem, 8vw, 4.5rem);
+      line-height: 0.95;
+      letter-spacing: -0.06em;
+    }
+
+    .subtitle {
+      margin: 12px auto 0;
+      max-width: 560px;
+      color: var(--muted);
+      font-size: clamp(1rem, 2.7vw, 1.2rem);
+    }
+
+    .status-row {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 18px;
+    }
+
+    .mistakes {
+      font-weight: 800;
+      background: #ffffff;
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      padding: 10px 16px;
+      box-shadow: 0 6px 18px rgba(44, 38, 28, 0.07);
+    }
+
+    .message {
+      min-height: 42px;
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      font-weight: 800;
+      color: #3d372f;
+      background: rgba(255, 255, 255, 0.62);
+      border: 1px dashed var(--border);
+      border-radius: 999px;
+      padding: 8px 14px;
+    }
+
+    .solved-section {
+      display: grid;
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+
+    .solved-card {
+      border-radius: 18px;
+      padding: 18px;
+      text-align: center;
+      border: 2px solid rgba(38, 38, 38, 0.08);
+      animation: slideIn 220ms ease-out;
+    }
+
+    .solved-card h2 {
+      margin: 0 0 7px;
+      font-size: clamp(0.95rem, 2.5vw, 1.15rem);
+      letter-spacing: 0.08em;
+    }
+
+    .solved-card p {
+      margin: 0;
+      font-weight: 700;
+      font-size: clamp(0.92rem, 2.4vw, 1.08rem);
+    }
+
+    .yellow { background: var(--yellow); }
+    .green { background: var(--green); }
+    .blue { background: var(--blue); }
+    .purple { background: var(--purple); }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+      margin: 0 auto 18px;
+    }
+
+    .tile {
+      min-height: 86px;
+      border: 2px solid transparent;
+      border-radius: 16px;
+      background: var(--tile);
+      color: var(--ink);
+      font: inherit;
+      font-size: clamp(0.88rem, 2.4vw, 1.08rem);
+      font-weight: 850;
+      cursor: pointer;
+      padding: 12px 8px;
+      transition: transform 120ms ease, background-color 120ms ease, border-color 120ms ease, box-shadow 120ms ease;
+      box-shadow: 0 6px 0 rgba(112, 103, 88, 0.10);
+    }
+
+    .tile:hover:not(:disabled) {
+      background: var(--tile-hover);
+      transform: translateY(-2px);
+    }
+
+    .tile.selected {
+      background: var(--selected);
+      border-color: #2c2925;
+      color: var(--selected-ink);
+      box-shadow: 0 6px 0 rgba(36, 32, 27, 0.25);
+    }
+
+    .tile:disabled {
+      cursor: not-allowed;
+      opacity: 0.72;
+      transform: none;
+    }
+
+    .controls {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .control-button {
+      border: 0;
+      border-radius: 999px;
+      color: #ffffff;
+      background: #262626;
+      font: inherit;
+      font-weight: 850;
+      padding: 13px 14px;
+      cursor: pointer;
+      transition: transform 120ms ease, opacity 120ms ease, background-color 120ms ease;
+    }
+
+    .control-button.secondary {
+      color: #262626;
+      background: #ffffff;
+      border: 1px solid var(--border);
+    }
+
+    .control-button:hover:not(:disabled) {
+      transform: translateY(-2px);
+    }
+
+    .control-button:disabled {
+      cursor: not-allowed;
+      opacity: 0.45;
+      transform: none;
+    }
+
+    .sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border: 0;
+    }
+
+    @keyframes slideIn {
+      from { opacity: 0; transform: translateY(-8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @media (max-width: 650px) {
+      body {
+        padding: 12px;
+      }
+
+      main {
+        border-radius: 22px;
+      }
+
+      .status-row {
+        justify-content: center;
+      }
+
+      .message {
+        flex-basis: 100%;
+        order: 2;
+      }
+
+      .grid {
+        gap: 7px;
+      }
+
+      .tile {
+        min-height: 72px;
+        border-radius: 13px;
+        padding: 8px 5px;
+      }
+
+      .controls {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    @media (max-width: 390px) {
+      .grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <section class="hero" aria-labelledby="game-title">
+      <h1 id="game-title">Calc Connections</h1>
+      <p class="subtitle">Group the 16 AP Calculus terms into 4 categories.</p>
+    </section>
+
+    <section class="status-row" aria-live="polite">
+      <div class="mistakes" id="mistakes">Mistakes remaining: 4</div>
+      <div class="message" id="message">Select 4 tiles that share a hidden calculus connection.</div>
+    </section>
+
+    <section class="solved-section" id="solved-section" aria-label="Solved categories"></section>
+
+    <section class="grid" id="tile-grid" aria-label="Unsolved tiles"></section>
+
+    <section class="controls" aria-label="Game controls">
+      <button class="control-button" id="submit-button">Submit</button>
+      <button class="control-button secondary" id="deselect-button">Deselect All</button>
+      <button class="control-button secondary" id="shuffle-button">Shuffle</button>
+      <button class="control-button secondary" id="reset-button">Reset Game</button>
+    </section>
+  </main>
+
+  <script>
+    const categories = [
+      {
+        name: "DERIVATIVE RULES",
+        color: "yellow",
+        terms: [
+          { id: "chain", display: "chain" },
+          { id: "power", display: "power" },
+          { id: "product", display: "product" },
+          { id: "quotient", display: "quotient" }
+        ]
+      },
+      {
+        name: "INTEGRAL METHODS",
+        color: "green",
+        terms: [
+          { id: "u-substitution", display: "u-substitution" },
+          { id: "riemann", display: "riemann" },
+          { id: "washer", display: "washer" },
+          { id: "shell", display: "shell" }
+        ]
+      },
+      {
+        name: "NEGATIVE ANTIDERIVATIVES",
+        color: "blue",
+        terms: [
+          { id: "sin x", display: "sin x" },
+          { id: "csc x cot x", display: "csc x cot x" },
+          { id: "csc^2 x", display: "csc<sup>2</sup> x" },
+          { id: "cos^-1x", display: "cos<sup>-1</sup>x" }
+        ]
+      },
+      {
+        name: "FUNCTIONS WHOSE DERIVATIVE CONTAINS ITSELF",
+        color: "purple",
+        terms: [
+          { id: "e^x", display: "e<sup>x</sup>" },
+          { id: "sec x", display: "sec x" },
+          { id: "csc x", display: "csc x" },
+          { id: "tan x", display: "tan x" }
+        ]
+      }
+    ];
+
+    const maxMistakes = 4;
+    const grid = document.querySelector("#tile-grid");
+    const solvedSection = document.querySelector("#solved-section");
+    const mistakesText = document.querySelector("#mistakes");
+    const message = document.querySelector("#message");
+    const submitButton = document.querySelector("#submit-button");
+    const deselectButton = document.querySelector("#deselect-button");
+    const shuffleButton = document.querySelector("#shuffle-button");
+    const resetButton = document.querySelector("#reset-button");
+
+    let tiles = [];
+    let selectedIds = [];
+    let solvedCategories = [];
+    let mistakesRemaining = maxMistakes;
+    let gameOver = false;
+
+    function buildTiles() {
+      return categories.flatMap((category) =>
+        category.terms.map((term) => ({
+          id: term.id,
+          text: term.display,
+          category: category.name,
+          difficulty: category.color,
+          solved: false
+        }))
+      );
+    }
+
+    function shuffleArray(items) {
+      const shuffled = [...items];
+      for (let index = shuffled.length - 1; index > 0; index--) {
+        const randomIndex = Math.floor(Math.random() * (index + 1));
+        [shuffled[index], shuffled[randomIndex]] = [shuffled[randomIndex], shuffled[index]];
+      }
+      return shuffled;
+    }
+
+    function render() {
+      renderSolvedGroups();
+      renderGrid();
+      mistakesText.textContent = `Mistakes remaining: ${mistakesRemaining}`;
+      submitButton.disabled = gameOver;
+      deselectButton.disabled = gameOver || selectedIds.length === 0;
+      shuffleButton.disabled = gameOver || tiles.every((tile) => tile.solved);
+    }
+
+    function renderSolvedGroups() {
+      solvedSection.innerHTML = "";
+
+      solvedCategories.forEach((categoryName) => {
+        const category = categories.find((item) => item.name === categoryName);
+        const card = document.createElement("article");
+        card.className = `solved-card ${category.color}`;
+
+        const title = document.createElement("h2");
+        title.textContent = category.name;
+
+        const terms = document.createElement("p");
+        terms.innerHTML = category.terms.map((term) => term.display).join(" · ");
+
+        card.append(title, terms);
+        solvedSection.append(card);
+      });
+    }
+
+    function renderGrid() {
+      grid.innerHTML = "";
+      const activeTiles = tiles.filter((tile) => !tile.solved);
+
+      activeTiles.forEach((tile) => {
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = "tile";
+        button.dataset.id = tile.id;
+        button.innerHTML = tile.text;
+        button.setAttribute("aria-pressed", selectedIds.includes(tile.id).toString());
+        button.disabled = gameOver;
+
+        if (selectedIds.includes(tile.id)) {
+          button.classList.add("selected");
+        }
+
+        button.addEventListener("click", () => toggleTile(tile.id));
+        grid.append(button);
+      });
+    }
+
+    function toggleTile(tileId) {
+      if (gameOver) return;
+
+      if (selectedIds.includes(tileId)) {
+        selectedIds = selectedIds.filter((id) => id !== tileId);
+      } else if (selectedIds.length < 4) {
+        selectedIds.push(tileId);
+      }
+
+      render();
+    }
+
+    function submitSelection() {
+      if (gameOver) return;
+
+      if (selectedIds.length !== 4) {
+        showMessage("Select exactly 4 tiles.");
+        return;
+      }
+
+      const selectedTiles = tiles.filter((tile) => selectedIds.includes(tile.id));
+      const firstCategory = selectedTiles[0].category;
+      const isCorrect = selectedTiles.every((tile) => tile.category === firstCategory);
+
+      if (isCorrect) {
+        solveCategory(firstCategory);
+        showMessage("Correct!");
+      } else {
+        mistakesRemaining -= 1;
+        showMessage(isOneAway(selectedTiles) ? "One away..." : "Not quite.");
+        selectedIds = [];
+
+        if (mistakesRemaining === 0) {
+          endGame(false);
+        }
+      }
+
+      if (!gameOver && solvedCategories.length === categories.length) {
+        endGame(true);
+      }
+
+      render();
+    }
+
+    function solveCategory(categoryName) {
+      tiles = tiles.map((tile) => (
+        tile.category === categoryName ? { ...tile, solved: true } : tile
+      ));
+      selectedIds = [];
+      solvedCategories.push(categoryName);
+    }
+
+    function isOneAway(selectedTiles) {
+      const counts = selectedTiles.reduce((totals, tile) => {
+        totals[tile.category] = (totals[tile.category] || 0) + 1;
+        return totals;
+      }, {});
+
+      return Object.values(counts).some((count) => count === 3);
+    }
+
+    function deselectAll() {
+      selectedIds = [];
+      render();
+    }
+
+    function shuffleUnsolvedTiles() {
+      const solvedTiles = tiles.filter((tile) => tile.solved);
+      const unsolvedTiles = shuffleArray(tiles.filter((tile) => !tile.solved));
+      tiles = [...unsolvedTiles, ...solvedTiles];
+      selectedIds = [];
+      showMessage("Unsolved tiles shuffled.");
+      render();
+    }
+
+    function endGame(didWin) {
+      gameOver = true;
+      selectedIds = [];
+
+      if (didWin) {
+        showMessage("You solved Calc Connections.");
+        return;
+      }
+
+      showMessage("Game over. Here are the correct groups.");
+      categories.forEach((category) => {
+        if (!solvedCategories.includes(category.name)) {
+          solvedCategories.push(category.name);
+        }
+      });
+      tiles = tiles.map((tile) => ({ ...tile, solved: true }));
+    }
+
+    function showMessage(text) {
+      message.textContent = text;
+    }
+
+    function resetGame() {
+      tiles = shuffleArray(buildTiles());
+      selectedIds = [];
+      solvedCategories = [];
+      mistakesRemaining = maxMistakes;
+      gameOver = false;
+      showMessage("Select 4 tiles that share a hidden calculus connection.");
+      render();
+    }
+
+    submitButton.addEventListener("click", submitSelection);
+    deselectButton.addEventListener("click", deselectAll);
+    shuffleButton.addEventListener("click", shuffleUnsolvedTiles);
+    resetButton.addEventListener("click", resetGame);
+
+    resetGame();
+  </script>
+</body>
+</html>
